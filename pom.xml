@@ -17,7 +17,7 @@
         <repository>
             <id>alimaven</id>
             <name>aliyun maven</name>
-            <url>https://repo1.maven.org/maven2/</url>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -111,7 +111,6 @@
                         <artifactId>spotbugs</artifactId>
                         <version>4.0.0-beta3</version>
                     </dependency>
-
                 </dependencies>
                 <executions>
                     <execution>
@@ -126,9 +125,9 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>6.3.1</version>
+                <version>6.3.2</version>
                 <configuration>
-                    <url>jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/news</url>
+                    <url>jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/newss</url>
                     <user>root</user>
                     <password>123456</password>
                 </configuration>

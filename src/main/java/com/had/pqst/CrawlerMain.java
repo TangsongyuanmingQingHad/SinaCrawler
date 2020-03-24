@@ -22,7 +22,8 @@ public class CrawlerMain {
     private static final String PASSWORD = "123456";
 
     public static void main(String[] args) throws IOException, SQLException {
-        Connection connection = DriverManager.getConnection("jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/news",
+        Connection connection = DriverManager.getConnection(
+                "jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/newss",
                 USERNAME, PASSWORD);
         String link;
         //从数据库中加载下一个要爬取的路径
@@ -35,7 +36,7 @@ public class CrawlerMain {
                 Document doc = getDocumentbyUrl(link);
                 parseUrlsFromPagesIntoDataBase(connection, doc);
                 storeIntoDataBaseIfItIsNews(doc);
-                updateLinkToDataBase(connection, link, "Insert into LINK_ALREADY_PROCESSED (LINK) VALUES (?)");
+                updateLinkToDataBase(connection, link, "Insert into LINK_ALREADY_PROCESSED (link) VALUES (?)");
             } else {
                 //不感兴趣，暂时不处理它
             }
@@ -46,7 +47,7 @@ public class CrawlerMain {
     private static void parseUrlsFromPagesIntoDataBase(Connection connection, Document doc) throws SQLException {
         for (Element aTarget : doc.select("a")) {
             String href = aTarget.attr("href");
-            updateLinkToDataBase(connection, href, "Insert into LINK_TO_BE_PROCESSED (LINK) VALUES (?)");
+            updateLinkToDataBase(connection, href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
         }
     }
 
@@ -115,8 +116,7 @@ public class CrawlerMain {
         httpGet.addHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 " +
                 "(KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36");
         CloseableHttpResponse response = httpclient.execute(httpGet);
-        log.info(response.getStatusLine());
-        log.info("response:" + link);
+        log.info(link);
         HttpEntity entity = response.getEntity();
         String html = EntityUtils.toString(entity);
         return Jsoup.parse(html);
