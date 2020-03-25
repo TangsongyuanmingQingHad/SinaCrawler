@@ -50,4 +50,14 @@ public class SINANEWS {
         this.modifyAt = modifyAt;
     }
 
+    @Override
+    public String toString() {
+        return "SINANEWS{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", createAt=" + createAt +
+                ", modifyAt=" + modifyAt +
+                '}';
+    }
 }
