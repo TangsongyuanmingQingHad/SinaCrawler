@@ -15,6 +15,8 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CrawlerMain {
     public static final Log log = LogFactory.getLog(CrawlerMain.class);
@@ -35,7 +37,7 @@ public class CrawlerMain {
             if (isInteresting(link)) {
                 Document doc = getDocumentbyUrl(link);
                 parseUrlsFromPagesIntoDataBase(connection, doc);
-                storeIntoDataBaseIfItIsNews(doc);
+                storeIntoDataBaseIfItIsNews(doc, link, connection);
                 updateLinkToDataBase(connection, link, "Insert into LINK_ALREADY_PROCESSED (link) VALUES (?)");
             } else {
                 //不感兴趣，暂时不处理它
@@ -47,7 +49,13 @@ public class CrawlerMain {
     private static void parseUrlsFromPagesIntoDataBase(Connection connection, Document doc) throws SQLException {
         for (Element aTarget : doc.select("a")) {
             String href = aTarget.attr("href");
-            updateLinkToDataBase(connection, href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
+            if (href.startsWith("//")) {
+                href = "https://" + href;
+            }
+
+            if (href.startsWith("http")) {
+                updateLinkToDataBase(connection, href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
+            }
         }
     }
 
@@ -100,12 +108,20 @@ public class CrawlerMain {
     }
 
     //将新闻页面就存入数据库
-    private static void storeIntoDataBaseIfItIsNews(Document doc) {
+    private static void storeIntoDataBaseIfItIsNews(Document doc, String link, Connection connection) throws SQLException {
         ArrayList<Element> titles = doc.select("article");
         if (titles != null) {
             for (Element titleTar : titles) {
                 String title = titleTar.child(0).text();
-                System.out.println(title);
+                log.info("开始插入数据：" + title);
+                String content = titleTar.select("p").stream().map(Element::text).collect(Collectors.joining("/n"));
+                try (PreparedStatement statement = connection.prepareStatement("insert into SINANEWS (title, content, url, create_at, modify_at) values ( ?,?,?,now(),now() ) ")) {
+                    statement.setString(1,title);
+                    statement.setString(2,content);
+                    statement.setString(3,link);
+                    statement.executeUpdate();
+                }
+                log.info("插入数据成功");
             }
         }
     }
@@ -123,6 +139,6 @@ public class CrawlerMain {
     }
 
     private static boolean isInteresting(String link) {
-        return "https://sina.cn".equals(link) || link.contains("https://news.sina.cn");
+        return "https://sina.cn".equals(link) || link.startsWith("https://news.sina.cn");
     }
 }

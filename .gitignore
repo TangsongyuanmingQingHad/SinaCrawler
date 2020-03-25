@@ -1,6 +1,4 @@
 .idea/
 .package-lock.json/
 target/
-newss.mv.db
-newss.trace.db
-db.txt
+*.db
