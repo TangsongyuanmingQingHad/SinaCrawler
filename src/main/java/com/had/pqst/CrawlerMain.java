@@ -15,30 +15,28 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CrawlerMain {
     public static final Log log = LogFactory.getLog(CrawlerMain.class);
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "123456";
-
+    private JdbcCrawlerDao dao = new DataAcessObject();
     public static void main(String[] args) throws IOException, SQLException {
-        Connection connection = DriverManager.getConnection(
-                "jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/newss",
-                USERNAME, PASSWORD);
+        new CrawlerMain().run();
+    }
+
+    public void run() throws SQLException, IOException {
         String link;
         //从数据库中加载下一个要爬取的路径
-        while ((link = getLinkThenDelete(connection)) != null) {
-            if (isProcessed(connection, link)) {
+        while ((link = dao.getLinkThenDelete()) != null) {
+            if (dao.isProcessed(link)) {
                 continue;
             }
             //是否是我们感兴趣的页面
             if (isInteresting(link)) {
                 Document doc = getDocumentbyUrl(link);
-                parseUrlsFromPagesIntoDataBase(connection, doc);
-                storeIntoDataBaseIfItIsNews(doc, link, connection);
-                updateLinkToDataBase(connection, link, "Insert into LINK_ALREADY_PROCESSED (link) VALUES (?)");
+                parseUrlsFromPagesIntoDataBase(doc);
+                storeIntoDataBaseIfItIsNews(doc, link);
+                dao.updateLinkToDataBase(link, "Insert into LINK_ALREADY_PROCESSED (link) VALUES (?)");
             } else {
                 //不感兴趣，暂时不处理它
             }
@@ -46,7 +44,7 @@ public class CrawlerMain {
     }
 
     //将新闻页面的href标签的值存入待处理列表
-    private static void parseUrlsFromPagesIntoDataBase(Connection connection, Document doc) throws SQLException {
+    private void parseUrlsFromPagesIntoDataBase(Document doc) throws SQLException {
         for (Element aTarget : doc.select("a")) {
             String href = aTarget.attr("href");
             if (href.startsWith("//")) {
@@ -54,73 +52,21 @@ public class CrawlerMain {
             }
 
             if (href.startsWith("http")) {
-                updateLinkToDataBase(connection, href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
+                dao.updateLinkToDataBase(href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
             }
         }
     }
 
-    public static String getLinkThenDelete(Connection connection) throws SQLException {
-        //从数据库中读取带爬取的路径
-        String link = getNextLink(connection, "select * from LINK_TO_BE_PROCESSED LIMIT 1");
-        if (link != null) {
-            //从数据库中删除删除这次处理过的url
-            updateLinkToDataBase(connection, link, "delete from LINK_TO_BE_PROCESSED where link = ? ");
-            return link;
-        }
-        return null;
-    }
-
-    //将分析完的新闻页面放入已处理列表
-    private static void updateLinkToDataBase(Connection connection, String link, String sql) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, link);
-            statement.executeUpdate();
-        }
-    }
-
-    //判断是否是已经处理过的页面
-    private static boolean isProcessed(Connection connection, String link) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement("select LINK from LINK_ALREADY_PROCESSED where LINK = ? ")) {
-            statement.setString(1, link);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * 从数据库中读取URL
-     *
-     * @param connection
-     * @return
-     * @throws SQLException
-     */
-    private static String getNextLink(Connection connection, String sql) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                return resultSet.getString(1);
-            }
-        }
-        return null;
-    }
 
     //将新闻页面就存入数据库
-    private static void storeIntoDataBaseIfItIsNews(Document doc, String link, Connection connection) throws SQLException {
+    private void storeIntoDataBaseIfItIsNews(Document doc, String link) throws SQLException {
         ArrayList<Element> titles = doc.select("article");
         if (titles != null) {
             for (Element titleTar : titles) {
                 String title = titleTar.child(0).text();
                 log.info("开始插入数据：" + title);
                 String content = titleTar.select("p").stream().map(Element::text).collect(Collectors.joining("/n"));
-                try (PreparedStatement statement = connection.prepareStatement("insert into SINANEWS (title, content, url, create_at, modify_at) values ( ?,?,?,now(),now() ) ")) {
-                    statement.setString(1,title);
-                    statement.setString(2,content);
-                    statement.setString(3,link);
-                    statement.executeUpdate();
-                }
+                dao.insertNewsIntoDataBase(title, content, link);
                 log.info("插入数据成功");
             }
         }
