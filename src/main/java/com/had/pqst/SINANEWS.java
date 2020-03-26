@@ -7,8 +7,23 @@ public class SINANEWS {
     private BigInteger id;
     private String title;
     private String content;
+    private String url;
     private Date createAt;
     private Date modifyAt;
+
+    public SINANEWS(String title, String content, String url) {
+        this.title = title;
+        this.content = content;
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 
     public BigInteger getId() {
         return id;

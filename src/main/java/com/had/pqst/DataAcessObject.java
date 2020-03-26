@@ -57,6 +57,16 @@ public class DataAcessObject implements JdbcCrawlerDao{
         return null;
     }
 
+    @Override
+    public void insertLinkIntoDataBase(String href) {
+
+    }
+
+    @Override
+    public void insertLinkIntoAlreadyDataBase(String link) {
+
+    }
+
     //判断是否是已经处理过的页面
     public boolean isProcessed(String link) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("select LINK from LINK_ALREADY_PROCESSED where LINK = ? ")) {

@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 
 public class CrawlerMain {
     public static final Log log = LogFactory.getLog(CrawlerMain.class);
-    private JdbcCrawlerDao dao = new DataAcessObject();
+    private JdbcCrawlerDao dao = new MybatisCrawlerDao();
+
     public static void main(String[] args) throws IOException, SQLException {
         new CrawlerMain().run();
     }
@@ -36,7 +37,7 @@ public class CrawlerMain {
                 Document doc = getDocumentbyUrl(link);
                 parseUrlsFromPagesIntoDataBase(doc);
                 storeIntoDataBaseIfItIsNews(doc, link);
-                dao.updateLinkToDataBase(link, "Insert into LINK_ALREADY_PROCESSED (link) VALUES (?)");
+                dao.insertLinkIntoAlreadyDataBase(link);
             } else {
                 //不感兴趣，暂时不处理它
             }
@@ -52,7 +53,7 @@ public class CrawlerMain {
             }
 
             if (href.startsWith("http")) {
-                dao.updateLinkToDataBase(href, "Insert into LINK_TO_BE_PROCESSED (link) VALUES (?)");
+                dao.insertLinkIntoDataBase(href);
             }
         }
     }
