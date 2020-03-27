@@ -63,7 +63,11 @@
             <version>1.4.199</version>
             <scope>compile</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.47</version>
+        </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
@@ -133,7 +137,8 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>6.3.2</version>
                 <configuration>
-                    <url>jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/newss</url>
+                    <!--  <url>jdbc:h2:file:/Users/had/IdeaProjects/sinaCrawler/newss</url> -->
+                    <url>jdbc:mysql://localhost:3306/news</url>
                     <user>root</user>
                     <password>123456</password>
                 </configuration>
