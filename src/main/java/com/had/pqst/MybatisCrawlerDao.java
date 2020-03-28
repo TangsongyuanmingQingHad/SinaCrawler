@@ -45,11 +45,11 @@ public class MybatisCrawlerDao implements JdbcCrawlerDao {
     }
 
     @Override
-    public String getLinkThenDelete() throws SQLException {
+    public synchronized String getLinkThenDelete() throws SQLException {
         try (SqlSession session = sqlSessionFactory.openSession(true)) {
             String link = session.selectOne("com.had.pst.Mybatis.getLink");
             if (link != null) {
-                session.delete("com.had.pst.Mybatis.deleteLink",link);
+                session.delete("com.had.pst.Mybatis.deleteLink", link);
             }
             return link;
         }

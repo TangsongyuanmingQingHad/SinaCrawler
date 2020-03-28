@@ -17,30 +17,37 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class CrawlerMain {
-    public static final Log log = LogFactory.getLog(CrawlerMain.class);
-    private JdbcCrawlerDao dao = new MybatisCrawlerDao();
+public class CrawlerMain extends Thread {
+    private JdbcCrawlerDao dao;
+    private static Log log;
 
-    public static void main(String[] args) throws IOException, SQLException {
-        new CrawlerMain().run();
+    public CrawlerMain(JdbcCrawlerDao dao, Log log) {
+        this.dao = dao;
+        this.log = log;
     }
 
-    public void run() throws SQLException, IOException {
-        String link;
-        //从数据库中加载下一个要爬取的路径
-        while ((link = dao.getLinkThenDelete()) != null) {
-            if (dao.isProcessed(link)) {
-                continue;
+
+    @Override
+    public void run() {
+        try {
+            String link;
+            //从数据库中加载下一个要爬取的路径
+            while ((link = dao.getLinkThenDelete()) != null) {
+                if (dao.isProcessed(link)) {
+                    continue;
+                }
+                //是否是我们感兴趣的页面
+                if (isInteresting(link)) {
+                    Document doc = getDocumentbyUrl(link);
+                    parseUrlsFromPagesIntoDataBase(doc);
+                    storeIntoDataBaseIfItIsNews(doc, link);
+                    dao.insertLinkIntoAlreadyDataBase(link);
+                } else {
+                    //不感兴趣，暂时不处理它
+                }
             }
-            //是否是我们感兴趣的页面
-            if (isInteresting(link)) {
-                Document doc = getDocumentbyUrl(link);
-                parseUrlsFromPagesIntoDataBase(doc);
-                storeIntoDataBaseIfItIsNews(doc, link);
-                dao.insertLinkIntoAlreadyDataBase(link);
-            } else {
-                //不感兴趣，暂时不处理它
-            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
