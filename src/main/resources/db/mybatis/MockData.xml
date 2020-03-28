@@ -14,7 +14,7 @@
                 url,
                 create_at,
                 modify_at
-        from SINANEWS;
+        from SINANEWS limit 500;
     </select>
     <insert id="insertMockeNews" parameterType="com.had.pqst.SINANEWS">
         insert into SINANEWS (

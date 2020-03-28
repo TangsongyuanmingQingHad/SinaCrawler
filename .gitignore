@@ -3,3 +3,4 @@
 target/
 *.db
 docker-mysql-data/
+docker-ElasticSearch-data/
