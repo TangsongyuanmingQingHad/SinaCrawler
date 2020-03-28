@@ -11,6 +11,6 @@ create table SINANEWS(
     title text,
     content text,
     url varchar(1000),
-    create_at timestamp,
-    modify_at timestamp
-);
+    create_at timestamp default now(),
+    modify_at timestamp default now()
+) DEFAULT CHARSET=utf8mb4 ;

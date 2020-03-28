@@ -1,6 +1,7 @@
 package com.had.pqst;
 
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.Date;
 
 public class SINANEWS {
@@ -8,8 +9,33 @@ public class SINANEWS {
     private String title;
     private String content;
     private String url;
-    private Date createAt;
-    private Date modifyAt;
+    private Instant createAt;
+    private Instant modifyAt;
+
+    public Instant getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(Instant createAt) {
+        this.createAt = createAt;
+    }
+
+    public Instant getModifyAt() {
+        return modifyAt;
+    }
+
+    public void setModifyAt(Instant modifyAt) {
+        this.modifyAt = modifyAt;
+    }
+
+    public SINANEWS(BigInteger id, String title, String content, String url, Instant createAt, Instant modifyAt) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.url = url;
+        this.createAt = createAt;
+        this.modifyAt = modifyAt;
+    }
 
     public SINANEWS(String title, String content, String url) {
         this.title = title;
@@ -47,22 +73,6 @@ public class SINANEWS {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public Date getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(Date createAt) {
-        this.createAt = createAt;
-    }
-
-    public Date getModifyAt() {
-        return modifyAt;
-    }
-
-    public void setModifyAt(Date modifyAt) {
-        this.modifyAt = modifyAt;
     }
 
 }
